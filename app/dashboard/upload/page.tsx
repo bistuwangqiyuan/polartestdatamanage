@@ -8,9 +8,10 @@ import { Label } from '@/components/ui/label'
 import { Progress } from '@/components/ui/progress'
 import { useToast } from '@/hooks/use-toast'
 import { useSupabase } from '@/components/providers/supabase-provider'
-import { Upload, FileSpreadsheet, CheckCircle, XCircle, Loader2 } from 'lucide-react'
+import { Upload, FileSpreadsheet, CheckCircle, XCircle, Loader2, Download } from 'lucide-react'
 import * as XLSX from 'xlsx'
 import { ExcelRow } from '@/types'
+import { generateExcelTemplate } from '@/lib/excel-template'
 
 interface UploadResult {
   fileName: string
@@ -134,14 +135,33 @@ export default function UploadPage() {
           }
 
           // 转换数据格式并插入数据库
-          const experimentData = excelData.map((row, index) => ({
-            experiment_id: experiment.id,
-            sequence_number: row['序号'] || index + 1,
-            timestamp: new Date().toISOString(), // 如果Excel中有时间戳，这里需要转换
-            voltage: parseFloat(String(row['电压 (V)'] || 0)),
-            current: parseFloat(String(row['电流 (A)'] || 0)),
-            // power 会由数据库触发器自动计算
-          }))
+          const experimentData = excelData.map((row, index) => {
+            // 处理时间戳
+            let timestamp: string
+            if (row['时间戳']) {
+              // Excel日期可能是数字格式（Excel序列号）或字符串
+              if (typeof row['时间戳'] === 'number') {
+                // Excel序列号转换为日期
+                const excelDate = new Date((row['时间戳'] - 25569) * 86400 * 1000)
+                timestamp = excelDate.toISOString()
+              } else {
+                // 尝试解析字符串日期
+                const parsedDate = new Date(row['时间戳'])
+                timestamp = isNaN(parsedDate.getTime()) ? new Date().toISOString() : parsedDate.toISOString()
+              }
+            } else {
+              timestamp = new Date().toISOString()
+            }
+
+            return {
+              experiment_id: experiment.id,
+              sequence_number: row['序号'] || index + 1,
+              timestamp,
+              voltage: parseFloat(String(row['电压 (V)'] || 0)),
+              current: parseFloat(String(row['电流 (A)'] || 0)),
+              // power 会由数据库触发器自动计算
+            }
+          })
 
           // 批量插入数据
           const batchSize = 100
@@ -351,7 +371,18 @@ export default function UploadPage() {
       {/* 文件格式说明 */}
       <Card className="industrial-card">
         <CardHeader>
-          <CardTitle className="text-industrial-warning">文件格式说明</CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-industrial-warning">文件格式说明</CardTitle>
+            <Button
+              onClick={() => generateExcelTemplate()}
+              variant="outline"
+              size="sm"
+              className="border-industrial-primary/30 text-industrial-primary hover:bg-industrial-primary/10"
+            >
+              <Download className="mr-2 h-4 w-4" />
+              下载模板
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="space-y-4 text-sm text-gray-400">

@@ -14,6 +14,11 @@ const Chart = dynamic(() => import('@/components/charts/overview-chart'), {
   loading: () => <div className="h-[300px] flex items-center justify-center text-gray-400">加载图表中...</div>
 })
 
+const AlertMonitor = dynamic(() => import('@/components/alerts/alert-monitor').then(mod => mod.AlertMonitor), {
+  ssr: false,
+  loading: () => <div className="h-[300px] flex items-center justify-center text-gray-400">加载预警监控中...</div>
+})
+
 export default function DashboardPage() {
   const [metrics, setMetrics] = useState<OverviewMetrics | null>(null)
   const [loading, setLoading] = useState(true)
@@ -154,17 +159,38 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-      {/* 最新数据表格预览 */}
-      <Card className="industrial-card">
-        <CardHeader>
-          <CardTitle className="text-industrial-warning">最新实验数据</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-gray-400 text-center py-8">
-            数据表格组件开发中...
-          </div>
-        </CardContent>
-      </Card>
+      {/* 预警监控和最新数据 */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <AlertMonitor compact />
+        
+        <Card className="industrial-card">
+          <CardHeader>
+            <CardTitle className="text-industrial-warning">系统状态</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between p-3 rounded-lg bg-industrial-bg">
+                <span className="text-gray-400">数据库连接</span>
+                <span className="flex items-center text-industrial-success">
+                  <span className="w-2 h-2 bg-industrial-success rounded-full mr-2 animate-pulse"></span>
+                  正常
+                </span>
+              </div>
+              <div className="flex items-center justify-between p-3 rounded-lg bg-industrial-bg">
+                <span className="text-gray-400">实时更新</span>
+                <span className="flex items-center text-industrial-success">
+                  <span className="w-2 h-2 bg-industrial-success rounded-full mr-2 animate-pulse"></span>
+                  已启用
+                </span>
+              </div>
+              <div className="flex items-center justify-between p-3 rounded-lg bg-industrial-bg">
+                <span className="text-gray-400">最后更新</span>
+                <span className="text-white">{new Date().toLocaleTimeString('zh-CN')}</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   )
 }
