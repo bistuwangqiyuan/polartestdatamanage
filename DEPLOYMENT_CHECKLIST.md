@@ -118,6 +118,33 @@ git push -u origin main
 - 等待几分钟让部署完全生效
 - 检查路由配置是否正确
 
+## 性能优化建议
+
+### 1. 启用 Netlify 插件
+在 Netlify Dashboard 中安装以下插件：
+- **Next.js Cache**: 缓存构建文件，加快后续构建速度
+- **Bundle Analyzer**: 分析包大小，找出优化空间
+- **Lighthouse**: 自动运行性能测试
+
+### 2. 图片优化
+- 使用 Next.js Image 组件处理所有图片
+- 将大图片转换为 WebP 格式
+- 使用适当的图片尺寸
+
+### 3. 代码优化
+```javascript
+// 使用动态导入减少首屏加载
+const HeavyComponent = dynamic(() => import('./HeavyComponent'), {
+  loading: () => <LoadingSkeleton />,
+  ssr: false
+})
+```
+
+### 4. 数据库优化
+- 定期清理旧数据
+- 使用数据库索引
+- 考虑使用 Supabase 的边缘函数
+
 ## 后续维护
 
 ### 更新代码
@@ -135,6 +162,21 @@ git push
 
 ### 回滚版本
 - Netlify Dashboard → Deploys → 找到之前的版本 → Publish deploy
+
+### 监控和分析
+1. **Netlify Analytics**
+   - 查看访问统计
+   - 分析页面性能
+   - 监控 404 错误
+
+2. **实时日志**
+   - Functions → 选择函数 → View logs
+   - 查看实时错误和调试信息
+
+3. **性能监控**
+   - 使用 Lighthouse CI
+   - 设置性能预算
+   - 定期检查 Core Web Vitals
 
 ## 获取帮助
 

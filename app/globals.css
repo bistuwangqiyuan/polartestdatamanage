@@ -132,6 +132,61 @@
   background: #00A8CC;
 }
 
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .industrial-card {
+    @apply p-4;
+  }
+  
+  .data-card {
+    @apply p-3;
+  }
+  
+  /* 移动端隐藏某些装饰效果 */
+  .data-card::before {
+    display: none;
+  }
+  
+  /* 调整字体大小 */
+  h1 {
+    @apply text-2xl;
+  }
+  
+  h2 {
+    @apply text-xl;
+  }
+  
+  /* 大屏展示页面移动端优化 */
+  .display-grid {
+    @apply grid-cols-1;
+  }
+}
+
+/* 平板设备 */
+@media (min-width: 768px) and (max-width: 1024px) {
+  .industrial-card {
+    @apply p-5;
+  }
+}
+
+/* 超小屏幕设备 */
+@media (max-width: 480px) {
+  /* 减小内边距和间距 */
+  .container {
+    @apply px-4;
+  }
+  
+  /* 调整卡片间距 */
+  .space-y-6 {
+    @apply space-y-4;
+  }
+  
+  /* 隐藏某些非必要元素 */
+  .hide-on-mobile {
+    @apply hidden;
+  }
+}
+
 /* 动画效果 */
 @keyframes slideIn {
   from {
@@ -159,4 +214,22 @@
 
 .animate-pulse-slow {
   animation: pulse 3s ease-in-out infinite;
+}
+
+/* 打印样式 */
+@media print {
+  body {
+    background: white;
+    color: black;
+  }
+  
+  .no-print {
+    display: none;
+  }
+  
+  .industrial-card {
+    border: 1px solid #ccc;
+    background: white;
+    box-shadow: none;
+  }
 }
