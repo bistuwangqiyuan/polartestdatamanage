@@ -9,63 +9,69 @@ import { Switch } from '@/components/ui/switch'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useToast } from '@/hooks/use-toast'
 import { useSupabase } from '@/components/providers/supabase-provider'
+import { useAuth } from '@/hooks/use-auth'
 import { 
   User, 
-  Shield, 
+  Lock, 
   Bell, 
   Database, 
+  Palette,
+  Shield,
   Save,
   Loader2
 } from 'lucide-react'
 
 export default function SettingsPage() {
   const [loading, setLoading] = useState(false)
-  const [userInfo, setUserInfo] = useState({
+  const [userProfile, setUserProfile] = useState({
     name: '',
     email: '',
-    role: '',
   })
-  const [alertSettings, setAlertSettings] = useState({
-    voltageThreshold: 30,
-    currentThreshold: 2,
-    powerThreshold: 50,
-    emailNotifications: true,
+  const [passwordForm, setPasswordForm] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: '',
+  })
+  const [notifications, setNotifications] = useState({
+    emailAlerts: true,
+    browserNotifications: false,
+    criticalOnly: false,
   })
   
   const { toast } = useToast()
-  const { supabase, user } = useSupabase()
+  const { user, supabase } = useSupabase()
+  const { userRole } = useAuth()
 
   useEffect(() => {
     if (user) {
-      fetchUserInfo()
-      fetchAlertSettings()
+      fetchUserProfile()
+      fetchNotificationSettings()
     }
   }, [user])
 
-  const fetchUserInfo = async () => {
+  const fetchUserProfile = async () => {
     try {
       const { data, error } = await supabase
         .from('users')
-        .select('*')
+        .select('name, email')
         .eq('id', user?.id)
         .single()
 
       if (error) throw error
       if (data) {
-        setUserInfo({
-          name: data.name,
-          email: data.email,
-          role: data.role,
-        })
+        setUserProfile(data)
       }
     } catch (error) {
-      console.error('Error fetching user info:', error)
+      console.error('Error fetching profile:', error)
     }
   }
 
-  const fetchAlertSettings = async () => {
-    // 这里可以从数据库获取用户的告警设置
-    // 目前使用默认值
+  const fetchNotificationSettings = async () => {
+    // 这里可以从数据库或localStorage获取通知设置
+    const saved = localStorage.getItem('notification_settings')
+    if (saved) {
+      setNotifications(JSON.parse(saved))
+    }
   }
 
   const handleUpdateProfile = async () => {
@@ -73,7 +79,7 @@ export default function SettingsPage() {
     try {
       const { error } = await supabase
         .from('users')
-        .update({ name: userInfo.name })
+        .update({ name: userProfile.name })
         .eq('id', user?.id)
 
       if (error) throw error
@@ -85,7 +91,7 @@ export default function SettingsPage() {
     } catch (error: any) {
       toast({
         title: '更新失败',
-        description: error.message || '请稍后重试',
+        description: error.message,
         variant: 'destructive',
       })
     } finally {
@@ -93,21 +99,39 @@ export default function SettingsPage() {
     }
   }
 
-  const handleUpdateAlertSettings = async () => {
+  const handleChangePassword = async () => {
+    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+      toast({
+        title: '密码不匹配',
+        description: '新密码和确认密码不一致',
+        variant: 'destructive',
+      })
+      return
+    }
+
     setLoading(true)
     try {
-      // 这里应该保存到数据库
-      // 目前仅显示成功消息
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
-      toast({
-        title: '设置已保存',
-        description: '告警阈值已更新',
+      const { error } = await supabase.auth.updateUser({
+        password: passwordForm.newPassword
       })
-    } catch (error) {
+
+      if (error) throw error
+
       toast({
-        title: '保存失败',
-        description: '请稍后重试',
+        title: '密码更新成功',
+        description: '您的密码已更新',
+      })
+
+      // 清空表单
+      setPasswordForm({
+        currentPassword: '',
+        newPassword: '',
+        confirmPassword: '',
+      })
+    } catch (error: any) {
+      toast({
+        title: '密码更新失败',
+        description: error.message,
         variant: 'destructive',
       })
     } finally {
@@ -115,36 +139,41 @@ export default function SettingsPage() {
     }
   }
 
-  const getRoleBadge = (role: string) => {
-    const roleMap: Record<string, { label: string; color: string }> = {
-      admin: { label: '管理员', color: 'text-industrial-danger' },
-      researcher: { label: '研究员', color: 'text-industrial-primary' },
-      viewer: { label: '访客', color: 'text-industrial-success' },
-    }
-    return roleMap[role] || { label: role, color: 'text-gray-400' }
+  const handleUpdateNotifications = () => {
+    localStorage.setItem('notification_settings', JSON.stringify(notifications))
+    toast({
+      title: '设置已保存',
+      description: '通知设置已更新',
+    })
   }
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold industrial-gradient-text">系统设置</h1>
-        <p className="text-gray-400 mt-2">管理您的个人信息和系统配置</p>
+        <p className="text-gray-400 mt-2">管理您的账户和系统偏好设置</p>
       </div>
 
-      <Tabs defaultValue="profile" className="space-y-4">
-        <TabsList className="bg-industrial-card border-industrial-primary/20">
-          <TabsTrigger value="profile" className="data-[state=active]:bg-industrial-primary data-[state=active]:text-black">
+      <Tabs defaultValue="profile" className="space-y-6">
+        <TabsList className="bg-industrial-card border border-industrial-primary/20">
+          <TabsTrigger value="profile" className="data-[state=active]:bg-industrial-primary/20">
             <User className="mr-2 h-4 w-4" />
             个人信息
           </TabsTrigger>
-          <TabsTrigger value="alerts" className="data-[state=active]:bg-industrial-primary data-[state=active]:text-black">
+          <TabsTrigger value="security" className="data-[state=active]:bg-industrial-primary/20">
+            <Lock className="mr-2 h-4 w-4" />
+            安全设置
+          </TabsTrigger>
+          <TabsTrigger value="notifications" className="data-[state=active]:bg-industrial-primary/20">
             <Bell className="mr-2 h-4 w-4" />
-            告警设置
+            通知设置
           </TabsTrigger>
-          <TabsTrigger value="system" className="data-[state=active]:bg-industrial-primary data-[state=active]:text-black">
-            <Database className="mr-2 h-4 w-4" />
-            系统信息
-          </TabsTrigger>
+          {userRole === 'admin' && (
+            <TabsTrigger value="system" className="data-[state=active]:bg-industrial-primary/20">
+              <Database className="mr-2 h-4 w-4" />
+              系统设置
+            </TabsTrigger>
+          )}
         </TabsList>
 
         <TabsContent value="profile" className="space-y-4">
@@ -152,7 +181,7 @@ export default function SettingsPage() {
             <CardHeader>
               <CardTitle className="text-industrial-primary">个人信息</CardTitle>
               <CardDescription className="text-gray-400">
-                更新您的个人资料
+                更新您的个人资料信息
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -160,33 +189,27 @@ export default function SettingsPage() {
                 <Label htmlFor="name">姓名</Label>
                 <Input
                   id="name"
-                  value={userInfo.name}
-                  onChange={(e) => setUserInfo({ ...userInfo, name: e.target.value })}
+                  value={userProfile.name}
+                  onChange={(e) => setUserProfile({ ...userProfile, name: e.target.value })}
                   className="bg-industrial-bg border-industrial-primary/30"
                 />
               </div>
-
               <div className="space-y-2">
                 <Label htmlFor="email">邮箱</Label>
                 <Input
                   id="email"
-                  value={userInfo.email}
+                  value={userProfile.email}
                   disabled
                   className="bg-industrial-bg border-industrial-primary/30 opacity-50"
                 />
-                <p className="text-xs text-gray-500">邮箱地址不可修改</p>
+                <p className="text-xs text-gray-500">邮箱地址不可更改</p>
               </div>
-
               <div className="space-y-2">
-                <Label>角色权限</Label>
-                <div className="flex items-center space-x-2">
-                  <Shield className={`h-5 w-5 ${getRoleBadge(userInfo.role).color}`} />
-                  <span className={`font-medium ${getRoleBadge(userInfo.role).color}`}>
-                    {getRoleBadge(userInfo.role).label}
-                  </span>
+                <Label>角色</Label>
+                <div className="px-3 py-2 rounded-lg bg-industrial-bg border border-industrial-primary/30">
+                  <span className="text-industrial-primary capitalize">{userRole}</span>
                 </div>
               </div>
-
               <Button
                 onClick={handleUpdateProfile}
                 disabled={loading}
@@ -200,7 +223,7 @@ export default function SettingsPage() {
                 ) : (
                   <>
                     <Save className="mr-2 h-4 w-4" />
-                    保存修改
+                    保存更改
                   </>
                 )}
               </Button>
@@ -208,94 +231,59 @@ export default function SettingsPage() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="alerts" className="space-y-4">
+        <TabsContent value="security" className="space-y-4">
           <Card className="industrial-card">
             <CardHeader>
-              <CardTitle className="text-industrial-warning">告警阈值设置</CardTitle>
+              <CardTitle className="text-industrial-danger">更改密码</CardTitle>
               <CardDescription className="text-gray-400">
-                配置数据异常告警的触发条件
+                定期更改密码以保护账户安全
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="voltage-threshold">电压阈值 (V)</Label>
-                  <Input
-                    id="voltage-threshold"
-                    type="number"
-                    value={alertSettings.voltageThreshold}
-                    onChange={(e) => setAlertSettings({
-                      ...alertSettings,
-                      voltageThreshold: parseFloat(e.target.value)
-                    })}
-                    className="bg-industrial-bg border-industrial-primary/30"
-                  />
-                  <p className="text-xs text-gray-500">超过此值将触发告警</p>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="current-threshold">电流阈值 (A)</Label>
-                  <Input
-                    id="current-threshold"
-                    type="number"
-                    step="0.1"
-                    value={alertSettings.currentThreshold}
-                    onChange={(e) => setAlertSettings({
-                      ...alertSettings,
-                      currentThreshold: parseFloat(e.target.value)
-                    })}
-                    className="bg-industrial-bg border-industrial-primary/30"
-                  />
-                  <p className="text-xs text-gray-500">超过此值将触发告警</p>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="power-threshold">功率阈值 (W)</Label>
-                  <Input
-                    id="power-threshold"
-                    type="number"
-                    value={alertSettings.powerThreshold}
-                    onChange={(e) => setAlertSettings({
-                      ...alertSettings,
-                      powerThreshold: parseFloat(e.target.value)
-                    })}
-                    className="bg-industrial-bg border-industrial-primary/30"
-                  />
-                  <p className="text-xs text-gray-500">超过此值将触发告警</p>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between p-4 rounded-lg bg-industrial-bg">
-                <div className="space-y-0.5">
-                  <Label htmlFor="email-notifications">邮件通知</Label>
-                  <p className="text-sm text-gray-500">
-                    当触发告警时发送邮件通知
-                  </p>
-                </div>
-                <Switch
-                  id="email-notifications"
-                  checked={alertSettings.emailNotifications}
-                  onCheckedChange={(checked) => setAlertSettings({
-                    ...alertSettings,
-                    emailNotifications: checked
-                  })}
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="current-password">当前密码</Label>
+                <Input
+                  id="current-password"
+                  type="password"
+                  value={passwordForm.currentPassword}
+                  onChange={(e) => setPasswordForm({ ...passwordForm, currentPassword: e.target.value })}
+                  className="bg-industrial-bg border-industrial-primary/30"
                 />
               </div>
-
+              <div className="space-y-2">
+                <Label htmlFor="new-password">新密码</Label>
+                <Input
+                  id="new-password"
+                  type="password"
+                  value={passwordForm.newPassword}
+                  onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
+                  className="bg-industrial-bg border-industrial-primary/30"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="confirm-password">确认新密码</Label>
+                <Input
+                  id="confirm-password"
+                  type="password"
+                  value={passwordForm.confirmPassword}
+                  onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
+                  className="bg-industrial-bg border-industrial-primary/30"
+                />
+              </div>
               <Button
-                onClick={handleUpdateAlertSettings}
-                disabled={loading}
-                className="bg-industrial-warning text-black hover:bg-industrial-warning/80"
+                onClick={handleChangePassword}
+                disabled={loading || !passwordForm.newPassword}
+                className="bg-industrial-danger text-white hover:bg-industrial-danger/80"
               >
                 {loading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    保存中...
+                    更新中...
                   </>
                 ) : (
                   <>
-                    <Save className="mr-2 h-4 w-4" />
-                    保存设置
+                    <Lock className="mr-2 h-4 w-4" />
+                    更新密码
                   </>
                 )}
               </Button>
@@ -303,66 +291,112 @@ export default function SettingsPage() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="system" className="space-y-4">
+        <TabsContent value="notifications" className="space-y-4">
           <Card className="industrial-card">
             <CardHeader>
-              <CardTitle className="text-industrial-success">系统信息</CardTitle>
+              <CardTitle className="text-industrial-warning">通知偏好</CardTitle>
               <CardDescription className="text-gray-400">
-                查看系统版本和配置信息
+                选择您希望接收通知的方式
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-3">
-                  <h4 className="text-sm font-medium text-gray-400">系统版本</h4>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-gray-500">应用版本:</span>
-                      <span className="font-mono">v1.0.0</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-500">构建日期:</span>
-                      <span className="font-mono">2025-01-14</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-500">环境:</span>
-                      <span className="font-mono">Production</span>
-                    </div>
-                  </div>
+            <CardContent className="space-y-6">
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label htmlFor="email-alerts">邮件通知</Label>
+                  <p className="text-sm text-gray-500">通过邮件接收重要预警</p>
                 </div>
-
-                <div className="space-y-3">
-                  <h4 className="text-sm font-medium text-gray-400">数据库信息</h4>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-gray-500">数据库类型:</span>
-                      <span className="font-mono">PostgreSQL</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-500">连接状态:</span>
-                      <span className="text-industrial-success">已连接</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-500">数据同步:</span>
-                      <span className="text-industrial-success">正常</span>
-                    </div>
-                  </div>
-                </div>
+                <Switch
+                  id="email-alerts"
+                  checked={notifications.emailAlerts}
+                  onCheckedChange={(checked) => 
+                    setNotifications({ ...notifications, emailAlerts: checked })
+                  }
+                />
               </div>
-
-              <div className="p-4 rounded-lg bg-industrial-bg">
-                <h4 className="text-sm font-medium text-gray-400 mb-2">技术栈</h4>
-                <div className="flex flex-wrap gap-2">
-                  {['Next.js 14', 'React 18', 'TypeScript', 'Supabase', 'TailwindCSS', 'Recharts'].map(tech => (
-                    <span key={tech} className="px-2 py-1 text-xs rounded bg-industrial-primary/20 text-industrial-primary">
-                      {tech}
-                    </span>
-                  ))}
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label htmlFor="browser-notifications">浏览器通知</Label>
+                  <p className="text-sm text-gray-500">在浏览器中显示桌面通知</p>
                 </div>
+                <Switch
+                  id="browser-notifications"
+                  checked={notifications.browserNotifications}
+                  onCheckedChange={(checked) => 
+                    setNotifications({ ...notifications, browserNotifications: checked })
+                  }
+                />
               </div>
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label htmlFor="critical-only">仅关键预警</Label>
+                  <p className="text-sm text-gray-500">只接收严重级别的预警通知</p>
+                </div>
+                <Switch
+                  id="critical-only"
+                  checked={notifications.criticalOnly}
+                  onCheckedChange={(checked) => 
+                    setNotifications({ ...notifications, criticalOnly: checked })
+                  }
+                />
+              </div>
+              <Button
+                onClick={handleUpdateNotifications}
+                className="bg-industrial-warning text-black hover:bg-industrial-warning/80"
+              >
+                <Bell className="mr-2 h-4 w-4" />
+                保存通知设置
+              </Button>
             </CardContent>
           </Card>
         </TabsContent>
+
+        {userRole === 'admin' && (
+          <TabsContent value="system" className="space-y-4">
+            <Card className="industrial-card">
+              <CardHeader>
+                <CardTitle className="text-industrial-success">系统配置</CardTitle>
+                <CardDescription className="text-gray-400">
+                  管理系统级别的设置和配置
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="p-4 rounded-lg bg-industrial-bg border border-industrial-primary/20">
+                  <div className="flex items-center space-x-3">
+                    <Shield className="h-5 w-5 text-industrial-primary" />
+                    <div>
+                      <h4 className="font-medium">数据备份</h4>
+                      <p className="text-sm text-gray-400 mt-1">
+                        自动备份已启用，每日凌晨 2:00 执行
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <div className="p-4 rounded-lg bg-industrial-bg border border-industrial-primary/20">
+                  <div className="flex items-center space-x-3">
+                    <Database className="h-5 w-5 text-industrial-success" />
+                    <div>
+                      <h4 className="font-medium">数据保留期</h4>
+                      <p className="text-sm text-gray-400 mt-1">
+                        实验数据保留 365 天
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <div className="p-4 rounded-lg bg-industrial-bg border border-industrial-primary/20">
+                  <div className="flex items-center space-x-3">
+                    <Palette className="h-5 w-5 text-industrial-warning" />
+                    <div>
+                      <h4 className="font-medium">界面主题</h4>
+                      <p className="text-sm text-gray-400 mt-1">
+                        工业深色主题（默认）
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        )}
       </Tabs>
     </div>
   )
