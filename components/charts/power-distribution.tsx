@@ -97,9 +97,11 @@ export default function PowerDistribution({ data }: PowerDistributionProps) {
     },
     scales: {
       x: {
+        border: {
+          display: false,
+        },
         grid: {
           color: 'rgba(255, 255, 255, 0.05)',
-          drawBorder: false,
         },
         ticks: {
           color: '#999',
@@ -109,9 +111,11 @@ export default function PowerDistribution({ data }: PowerDistributionProps) {
         },
       },
       y: {
+        border: {
+          display: false,
+        },
         grid: {
           color: 'rgba(255, 255, 255, 0.05)',
-          drawBorder: false,
         },
         ticks: {
           color: '#999',

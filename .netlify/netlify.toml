@@ -1,0 +1,148 @@
+functionsDirectory = "C:\\Users\\wangqiyuan\\project\\claudecode\\polartestdatamanage\\netlify\\functions"
+functionsDirectoryOrigin = "config"
+headersOrigin = "config"
+redirectsOrigin = "config"
+
+[build]
+edge_functions = "C:\\Users\\wangqiyuan\\project\\claudecode\\polartestdatamanage\\netlify\\edge-functions"
+publish = "C:\\Users\\wangqiyuan\\project\\claudecode\\polartestdatamanage\\.next"
+publishOrigin = "config"
+commandOrigin = "config"
+command = "npm run build"
+functions = "C:\\Users\\wangqiyuan\\project\\claudecode\\polartestdatamanage\\netlify\\functions"
+
+[build.environment]
+NEXT_TELEMETRY_DISABLED = "1"
+NODE_ENV = "production"
+
+[build.processing]
+
+[build.processing.css]
+
+[build.processing.html]
+
+[build.processing.images]
+
+[build.processing.js]
+
+[build.services]
+
+[dev]
+command = "npm run dev"
+port = 3000.0
+targetPort = 3000.0
+
+[functions]
+
+[functions."*"]
+node_bundler = "esbuild"
+
+[[plugins]]
+origin = "config"
+package = "@netlify/plugin-nextjs"
+
+[plugins.inputs]
+
+[[headers]]
+for = "/*"
+
+[headers.values]
+X-Frame-Options = "SAMEORIGIN"
+X-Content-Type-Options = "nosniff"
+X-XSS-Protection = "1; mode=block"
+Referrer-Policy = "strict-origin-when-cross-origin"
+Permissions-Policy = "camera=(), microphone=(), geolocation=()"
+X-DNS-Prefetch-Control = "on"
+Strict-Transport-Security = "max-age=31536000; includeSubDomains; preload"
+Cache-Control = "public, max-age=0, must-revalidate"
+Link = "</favicon.ico>; rel=preload; as=image, \\\r\n             </_next/static/css/app/layout.css>; rel=preload; as=style, \\\r\n             <https://fonts.googleapis.com>; rel=preconnect; crossorigin, \\\r\n             <https://zzyueuweeoakopuuwfau.supabase.co>; rel=preconnect"
+
+[[headers]]
+for = "/_next/static/*"
+
+[headers.values]
+Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+for = "/images/*"
+
+[headers.values]
+Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+for = "/*.js"
+
+[headers.values]
+Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+for = "/*.css"
+
+[headers.values]
+Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+for = "/*.woff2"
+
+[headers.values]
+Cache-Control = "public, max-age=31536000, immutable"
+
+[[redirects]]
+from = "http://*"
+to = "https://:splat"
+status = 301.0
+force = true
+
+[redirects.query]
+
+[redirects.conditions]
+
+[redirects.headers]
+
+[[redirects]]
+from = "/*/"
+to = "/:splat"
+status = 301.0
+force = false
+
+[redirects.query]
+
+[redirects.conditions]
+
+[redirects.headers]
+
+[[redirects]]
+from = "/index"
+to = "/"
+status = 301.0
+force = false
+
+[redirects.query]
+
+[redirects.conditions]
+
+[redirects.headers]
+
+[[redirects]]
+from = "/home"
+to = "/"
+status = 301.0
+force = false
+
+[redirects.query]
+
+[redirects.conditions]
+
+[redirects.headers]
+
+[[redirects]]
+from = "/*"
+to = "/"
+status = 200.0
+force = false
+
+[redirects.query]
+
+[redirects.conditions]
+
+[redirects.headers]

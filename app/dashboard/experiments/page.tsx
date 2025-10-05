@@ -329,7 +329,7 @@ export default function ExperimentsPage() {
                   </div>
                   <div className="flex items-center text-gray-400">
                     <Activity className="mr-2 h-4 w-4" />
-                    <span>{experiment.dataCount || 0} 数据点</span>
+                    <span>{(experiment as any).dataCount || 0} 数据点</span>
                   </div>
                   <div className="flex items-center text-gray-400">
                     <MapPin className="mr-2 h-4 w-4" />
@@ -357,7 +357,7 @@ export default function ExperimentsPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>确认删除</AlertDialogTitle>
             <AlertDialogDescription>
-              您确定要删除实验 "{selectedExperiment?.experiment_name}" 吗？
+              您确定要删除实验 &ldquo;{selectedExperiment?.experiment_name}&rdquo; 吗？
               此操作将同时删除所有相关的实验数据，且无法恢复。
             </AlertDialogDescription>
           </AlertDialogHeader>

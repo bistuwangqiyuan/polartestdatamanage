@@ -16,21 +16,55 @@
 # NEXT_PUBLIC_SUPABASE_ANON_KEY
 # SUPABASE_SERVICE_ROLE_KEY
 
-# 重定向规则
+# 重定向规则 - SEO友好
+# 强制HTTPS
 [[redirects]]
-  from = "/"
+  from = "http://*"
+  to = "https://:splat"
+  status = 301
+  force = true
+
+# 删除尾部斜杠（SEO规范化）
+[[redirects]]
+  from = "/*/"
+  to = "/:splat"
+  status = 301
+
+# 主页
+[[redirects]]
+  from = "/index"
+  to = "/"
+  status = 301
+
+[[redirects]]
+  from = "/home"
+  to = "/"
+  status = 301
+
+# Next.js路由重写
+[[redirects]]
+  from = "/*"
   to = "/"
   status = 200
 
-# Headers配置
+# Headers配置 - SEO和安全优化
 [[headers]]
   for = "/*"
   [headers.values]
-    X-Frame-Options = "DENY"
+    X-Frame-Options = "SAMEORIGIN"
     X-Content-Type-Options = "nosniff"
     X-XSS-Protection = "1; mode=block"
     Referrer-Policy = "strict-origin-when-cross-origin"
     Permissions-Policy = "camera=(), microphone=(), geolocation=()"
+    X-DNS-Prefetch-Control = "on"
+    Strict-Transport-Security = "max-age=31536000; includeSubDomains; preload"
+    # 缓存控制
+    Cache-Control = "public, max-age=0, must-revalidate"
+    # Link头部 - DNS预取和资源预加载
+    Link = '''</favicon.ico>; rel=preload; as=image, \
+             </_next/static/css/app/layout.css>; rel=preload; as=style, \
+             <https://fonts.googleapis.com>; rel=preconnect; crossorigin, \
+             <https://zzyueuweeoakopuuwfau.supabase.co>; rel=preconnect'''
     
 # 静态资源缓存
 [[headers]]

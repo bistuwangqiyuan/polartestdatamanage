@@ -45,4 +45,5 @@ export function AuthGuard({
   }
 
   return <>{children}</>
+}
 

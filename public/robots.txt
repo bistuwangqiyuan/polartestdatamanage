@@ -1,0 +1,42 @@
+# https://www.robotstxt.org/robotstxt.html
+# 指导搜索引擎爬虫抓取规则
+
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /admin/
+Disallow: /_next/
+Disallow: /dashboard/settings/
+
+# 特别允许重要页面
+Allow: /dashboard$
+Allow: /display$
+
+# 爬取延迟（毫秒）
+Crawl-delay: 1
+
+# 站点地图
+Sitemap: https://polartestdatamanage.netlify.app/sitemap.xml
+Sitemap: https://polartestdatamanage.netlify.app/sitemap-0.xml
+
+# 针对不同搜索引擎的特定规则
+User-agent: Googlebot
+Allow: /
+Disallow: /api/
+Disallow: /_next/
+
+User-agent: Baiduspider
+Allow: /
+Disallow: /api/
+Disallow: /_next/
+
+User-agent: Sogou web spider
+Allow: /
+Disallow: /api/
+Disallow: /_next/
+
+User-agent: 360Spider
+Allow: /
+Disallow: /api/
+Disallow: /_next/
+

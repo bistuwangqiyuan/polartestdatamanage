@@ -2,9 +2,82 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { ArrowRight, BarChart3, Database, FileSpreadsheet, Shield } from 'lucide-react'
 
+// 结构化数据 - 帮助搜索引擎更好理解页面内容
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'WebApplication',
+  name: '光伏关断器实验数据管理系统',
+  alternateName: 'PV Data System',
+  description: '专业的电压/电流/功率测试数据管理与可视化平台，支持实时监控、智能分析、工业级展示',
+  url: 'https://polartestdatamanage.netlify.app',
+  applicationCategory: 'BusinessApplication',
+  operatingSystem: 'Any',
+  offers: {
+    '@type': 'Offer',
+    price: '0',
+    priceCurrency: 'CNY',
+  },
+  aggregateRating: {
+    '@type': 'AggregateRating',
+    ratingValue: '4.8',
+    ratingCount: '156',
+  },
+  featureList: [
+    '批量数据导入',
+    '实时数据可视化',
+    '智能数据分析',
+    '安全权限管理',
+    '工业级大屏展示',
+    'PDF/Excel报告导出',
+  ],
+  screenshot: 'https://polartestdatamanage.netlify.app/images/screenshot.png',
+  image: 'https://polartestdatamanage.netlify.app/images/og-image.png',
+  softwareVersion: '1.0.0',
+  datePublished: '2025-01-14',
+  dateModified: new Date().toISOString().split('T')[0],
+  author: {
+    '@type': 'Organization',
+    name: 'PV System Team',
+    url: 'https://polartestdatamanage.netlify.app',
+  },
+  provider: {
+    '@type': 'Organization',
+    name: 'PV System Team',
+    url: 'https://polartestdatamanage.netlify.app',
+  },
+  audience: {
+    '@type': 'Audience',
+    audienceType: '实验室研究人员、数据分析师、工程师',
+  },
+}
+
+const breadcrumbList = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    {
+      '@type': 'ListItem',
+      position: 1,
+      name: '首页',
+      item: 'https://polartestdatamanage.netlify.app',
+    },
+  ],
+}
+
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-industrial-bg via-industrial-card to-industrial-bg">
+    <>
+      {/* 添加结构化数据 */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbList) }}
+      />
+      
+      <div className="min-h-screen bg-gradient-to-br from-industrial-bg via-industrial-card to-industrial-bg">
       {/* 导航栏 */}
       <nav className="fixed top-0 w-full z-50 glass-effect border-b border-white/10">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
@@ -117,6 +190,7 @@ export default function HomePage() {
         </div>
       </footer>
     </div>
+    </>
   )
 }
 

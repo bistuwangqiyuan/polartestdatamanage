@@ -9,14 +9,10 @@
     "lint": "next lint",
     "db:init": "node scripts/init-db.js",
     "analyze": "ANALYZE=true next build",
-
-    "typecheck": "tsc --noEmit"
-
     "typecheck": "tsc --noEmit",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage"
-
   },
   "dependencies": {
     "@hookform/resolvers": "^3.3.4",

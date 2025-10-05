@@ -114,7 +114,6 @@ export default function RealtimeChart({ data }: RealtimeChartProps) {
         position: 'left' as const,
         grid: {
           color: 'rgba(255, 255, 255, 0.05)',
-          drawBorder: false,
         },
         ticks: {
           color: '#00D4FF',
@@ -137,7 +136,6 @@ export default function RealtimeChart({ data }: RealtimeChartProps) {
         position: 'right' as const,
         grid: {
           drawOnChartArea: false,
-          drawBorder: false,
         },
         ticks: {
           color: '#FFB800',

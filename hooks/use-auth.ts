@@ -78,4 +78,4 @@ export function useAuth() {
     canManageUsers,
     isAuthenticated: !!user,
   }
-
+}
